@@ -15,9 +15,10 @@ def convert_datetimes(transaction_df):
     OUTPUT: tranaction dataframe with proper datetimes
     '''
 
-    fraud_df['signup_time'] = pd.to_datetime(fraud['signup_time'])
-    fraud_df['purchase_time'] = pd.to_datetime(fraud['purchase_time'])
-    return fraud_df
+    transaction_df['signup_time'] = pd.to_datetime(transaction_df['signup_time'])
+    transaction_df['purchase_time'] = pd.to_datetime(transaction_df['purchase_time'])
+
+    return transaction_df
 
 
 def gender_binary(transaction_df):
@@ -29,7 +30,8 @@ def gender_binary(transaction_df):
     OUTPUT: transaction dataframe with numeric gender column
     '''
 
-    transaction_df['gender'] = transaction_df['gender'].apply({'M':1, 'F':0}.get)
+    transaction_df['sex'] = transaction_df['sex'].apply({'M':1, 'F':0}.get)
+
     return transaction_df
 
 
@@ -54,9 +56,10 @@ def clean_transaction_data():
     OUTPUT: clean transaction dataframe
     '''
 
-    transactions = pd.read_csv('../data/Fraud_Data.csv')
+    transactions = pd.read_csv('../data/transactions_with_country.csv')
     update_dates = convert_datetimes(transactions)
     update_gender = gender_binary(update_dates)
     update_dummies = get_dummies(update_gender)
     cleaned_transactions = update_dummies.copy()
+
     return cleaned_transactions
