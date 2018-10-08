@@ -1,0 +1,9 @@
+#ignore notebooks
+
+*.ipynb
+
+!work_through.ipynb
+
+__pycache__/
+
+*__pycache__
