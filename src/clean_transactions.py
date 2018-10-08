@@ -56,7 +56,7 @@ def clean_transaction_data():
     OUTPUT: clean transaction dataframe
     '''
 
-    transactions = pd.read_csv('../data/transactions_with_country.csv')
+    transactions = pd.read_csv('data/transactions_with_country.csv')
     update_dates = convert_datetimes(transactions)
     update_gender = gender_binary(update_dates)
     update_dummies = get_dummies(update_gender)

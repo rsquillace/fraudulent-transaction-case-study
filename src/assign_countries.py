@@ -9,7 +9,7 @@ This script joins the transaction and ip dataframes to assign a country to each 
 def join_dataframes(transaction_df, ip_df):
 
     '''
-    Uses a SQL query to join the two pandas dataframes to assign a country to each transaction
+    Uses a SQL query to join the two pandas dataframes and assign a country to each transaction
 
     INPUT: transaction dataframe, ip address dataframe
     OUTPUT: dataframe containing reported transactions with an ip address in the ranges provided and a country column
