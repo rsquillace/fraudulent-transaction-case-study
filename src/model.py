@@ -41,7 +41,7 @@ class MakeModel():
         Splits data into an 80-20 train test split
         '''
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=.2, random_state = 42)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=.2)
 
     def make_random_forest(self):
 
@@ -70,12 +70,12 @@ class MakeModel():
         OUTPUT: confusion matrix elements, recall score, precision score
         '''
 
-        probability = self.rf.predict_proba(self.X_test)[:,1]
+        probability = self.rf.predict_proba(test_x)[:,1]
         probability[probability >= probability_threshold] = 1
         probability[probability < probability_threshold] = 0
 
-        recall = recall_score(self.y_test, probability)
-        precision = precision_score(self.y_test, probability)
-        true_neg, false_pos, false_neg, true_pos = confusion_matrix(test_y, self.rf.predict(test_x)).ravel()
+        recall = recall_score(test_y, probability)
+        precision = precision_score(test_y, probability)
+        true_neg, false_pos, false_neg, true_pos = confusion_matrix(test_y, probability).ravel()
 
         print ('recall score: {} \nprecision_score: {} \ntrue negatives: {}, false positives: {}, false negatives: {}, true positives: {}'.format(recall, precision, true_neg, false_pos, false_neg, true_pos))
