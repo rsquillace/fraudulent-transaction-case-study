@@ -1,11 +1,9 @@
 import pandas as pd
 
 from sklearn.utils import resample
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import recall_score
-from sklearn.metrics import precision_score
+from sklearn.metrics import confusion_matrix, recall_score, precision_score, roc_auc_score
 
 
 class MakeModel():
@@ -13,27 +11,14 @@ class MakeModel():
     def __init__(self, transaction_df):
         self.transaction_df = transaction_df
 
-    def downsample_majority_class(self):
+    def prepare_x_y(self, list_of_columns):
 
         '''
-        The strong imbalance between fraudulent and non fraudulent transactions in the provided data is problematic when training models. To combat this, downsample the non fraudulent transactions until there is an equal amount between fraudulent and non fraudulent
+        Defines target and model features based on the list of columns specified
         '''
 
-        fraud_transactions = self.transaction_df[self.transaction_df['class']==1]
-        nonfraud_transactions = self.transaction_df[self.transaction_df['class']==0]
-        non_fraud_downsampled = resample(nonfraud_transactions, replace=False, n_samples=len(fraud_transactions), random_state=42)
-        self.balanced_transactions = pd.concat([fraud_transactions, non_fraud_downsampled])
-
-
-    def prepare_x_y(self):
-
-        '''
-        Defines model features and target
-        '''
-
-        self.x =  self.balanced_transactions.filter(items=['purchase_value', 'sex', 'age', 'source_Ads', 'source_Direct', 'source_SEO', 'browser_Chrome',
-       'browser_FireFox', 'browser_IE', 'browser_Opera', 'browser_Safari','multiple_accounts', 'time_between_signup_purchase'])
-        self.y = self.balanced_transactions['class']
+        self.x =  self.transaction_df.filter(items=list_of_columns)
+        self.y = self.transaction_df['class']
 
     def split(self):
 
@@ -43,13 +28,21 @@ class MakeModel():
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=.2)
 
-    def make_random_forest(self):
+    def make_random_forest(self, num_trees):
 
         '''
-        Establishes random forest instance with 1000 trees
+        Creates random forest model with n trees
         '''
 
-        self.rf = RandomForestClassifier(n_estimators=1000)
+        self.rf = RandomForestClassifier(n_estimators=num_trees)
+
+    def make_gradient_boost(self, num_trees, learning_rate):
+
+        '''
+        Creates gradient boosting model with n trees at a specified learninig rate
+        '''
+
+        self.gb = GradientBoostingClassifier(n_estimators=num_trees, learning_rate=learning_rate)
 
     def fit(self):
 
@@ -64,7 +57,7 @@ class MakeModel():
         '''
         The priority in this study is to minimize false negatives, while also keeping false positives down to a reasonable number so as to not waste time investingating transactions that aren't fraudulent. Rather than relying entirely on classification, adjust the threshold for how probable fraud should be to warrent an investigation on a transaction.
 
-        Confusion matrices a good evaluation metric for the model, as well as precision and recall scores.
+        Confusion matrices are a good evaluation metric for the model, as well as precision and recall scores.
 
         INPUT: probability of fraud required to flag transaction, x to evaluate on, y to evaluate on **made into variables so you can easily evaluate the model on different samples
         OUTPUT: confusion matrix elements, recall score, precision score
@@ -76,6 +69,7 @@ class MakeModel():
 
         recall = recall_score(test_y, probability)
         precision = precision_score(test_y, probability)
+        auroc = roc_auc_score(test_y, probability)
         true_neg, false_pos, false_neg, true_pos = confusion_matrix(test_y, probability).ravel()
 
-        print ('recall score: {} \nprecision_score: {} \ntrue negatives: {}, false positives: {}, false negatives: {}, true positives: {}'.format(recall, precision, true_neg, false_pos, false_neg, true_pos))
+        print ('recall score: {} \nprecision_score: {} \narea under roc: {} \ntrue negatives: {}, false positives: {}, false negatives: {}, true positives: {}'.format(recall, precision, auroc, true_neg, false_pos, false_neg, true_pos))
