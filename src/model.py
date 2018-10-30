@@ -10,6 +10,7 @@ class MakeModel():
 
     def __init__(self, transaction_df):
         self.transaction_df = transaction_df
+        self.model = None
 
     def prepare_x_y(self, list_of_columns):
 
@@ -34,7 +35,7 @@ class MakeModel():
         Creates random forest model with n trees
         '''
 
-        self.rf = RandomForestClassifier(n_estimators=num_trees)
+        self.model = RandomForestClassifier(n_estimators=num_trees)
 
     def make_gradient_boost(self, num_trees, learning_rate):
 
@@ -42,7 +43,7 @@ class MakeModel():
         Creates gradient boosting model with n trees at a specified learninig rate
         '''
 
-        self.gb = GradientBoostingClassifier(n_estimators=num_trees, learning_rate=learning_rate)
+        self.model = GradientBoostingClassifier(n_estimators=num_trees, learning_rate=learning_rate)
 
     def fit(self):
 
@@ -50,9 +51,9 @@ class MakeModel():
         Fits random forest model on training data
         '''
 
-        self.rf.fit(self.X_train, self.y_train)
+        self.model.fit(self.X_train, self.y_train)
 
-    def evaluate(self, probability_threshold, test_x, test_y):
+    def evaluate(self, probability_threshold):
 
         '''
         The priority in this study is to minimize false negatives, while also keeping false positives down to a reasonable number so as to not waste time investingating transactions that aren't fraudulent. Rather than relying entirely on classification, adjust the threshold for how probable fraud should be to warrent an investigation on a transaction.
@@ -63,13 +64,13 @@ class MakeModel():
         OUTPUT: confusion matrix elements, recall score, precision score
         '''
 
-        probability = self.rf.predict_proba(test_x)[:,1]
+        probability = self.model.predict_proba(self.X_test)[:,1]
         probability[probability >= probability_threshold] = 1
         probability[probability < probability_threshold] = 0
 
-        recall = recall_score(test_y, probability)
-        precision = precision_score(test_y, probability)
-        auroc = roc_auc_score(test_y, probability)
-        true_neg, false_pos, false_neg, true_pos = confusion_matrix(test_y, probability).ravel()
+        recall = recall_score(self.y_test, probability)
+        precision = precision_score(self.y_test, probability)
+        auroc = roc_auc_score(self.y_test, probability)
+        true_neg, false_pos, false_neg, true_pos = confusion_matrix(self.y_test, probability).ravel()
 
         print ('recall score: {} \nprecision_score: {} \narea under roc: {} \ntrue negatives: {}, false positives: {}, false negatives: {}, true positives: {}'.format(recall, precision, auroc, true_neg, false_pos, false_neg, true_pos))
